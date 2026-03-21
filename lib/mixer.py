@@ -1,6 +1,6 @@
 from lib.custom_types import Recipe, ShortRecipe
-from lib.effects import multiplier_map
-from lib.ingredients import ingredients_map
+from lib.dataset.multiplier_map import multiplier_map
+from lib.dataset.ingredients_map import ingredients_map
 
 import copy
 
@@ -22,8 +22,7 @@ def mixOneIngredientLong(recipe: Recipe, ingredient_name: str):
     production_cost = recipe.production_cost + new_ingredient.price
     sell_price = calculateSellPrice(base_price, effects)
     profit = calculateProfit(sell_price, production_cost)
-    return Recipe(ingredients, effects, base_price, production_cost,
-                  sell_price, profit)
+    return Recipe(ingredients, effects, base_price, production_cost, sell_price, profit)
 
 
 # @brief Mixes the given ingredient into the given recipe.
@@ -52,26 +51,22 @@ def calculateEffects(effects: list[str], ingredient: str):
         source_effect_present = effect_replacement.to_remove in new_effects
         source_effect_not_removed_by_different_rule = effect_replacement.to_remove in new_effects
         target_effect_not_present_yet = not effect_replacement.to_add in new_effects
-        if (source_effect_present
-                and source_effect_not_removed_by_different_rule
-                and target_effect_not_present_yet):
+        if source_effect_present and source_effect_not_removed_by_different_rule and target_effect_not_present_yet:
             new_effects.remove(effect_replacement.to_remove)
             new_effects.append(effect_replacement.to_add)
             replaced_an_effect = True
 
-    if (replaced_an_effect):
+    if replaced_an_effect:
         for effect_switch in ingredient.effect_switches:
-            if (effect_switch.first in new_effects
-                    and not effect_switch.second in new_effects):
+            if effect_switch.first in new_effects and not effect_switch.second in new_effects:
                 new_effects.remove(effect_switch.first)
                 new_effects.append(effect_switch.second)
-            elif (effect_switch.second in new_effects
-                  and not effect_switch.first in new_effects):
+            elif effect_switch.second in new_effects and not effect_switch.first in new_effects:
                 new_effects.remove(effect_switch.second)
                 new_effects.append(effect_switch.first)
 
-    if (len(new_effects) < 8):
-        if (not ingredient.added_effect in new_effects):
+    if len(new_effects) < 8:
+        if not ingredient.added_effect in new_effects:
             new_effects.append(ingredient.added_effect)
 
     new_effects.sort()

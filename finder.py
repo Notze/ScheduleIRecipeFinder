@@ -1,9 +1,9 @@
 from lib.custom_types import ShortRecipe
-from lib.custom_types import Recipe
-from lib.effects import multiplier_map
+from lib.custom_types import Ingredients, Recipe
+from lib.datamodel.multiplier_map import multiplier_map
 from lib.ingredients import ingredients_map
 from lib.utility import prettyPrint
-from lib.recipes import starting_recipes_map
+from lib.datamodel.starting_recipes import starting_recipes_map
 import lib.mixer as mixer
 
 import progressbar
@@ -12,31 +12,31 @@ import datetime
 from enum import Enum
 
 # drugs to start mixing with
-drugs: dict[str, bool] = {
+available_drugs: dict[str, bool] = {
     "OG-Kush": True,
     # "Sour-Diesel": True,
     # "Green-Crack": True,
     # "Granddaddy-Purple": True,
     # "Meth": True,
 }
-# ingredients to mix with
-ingredients: dict[str, bool] = {
-    "Banana": True,
-    "Cuke": True,
-    "Donut": True,
-    "Paracetamol": True,
-    "Viagra": True,
-    "Mouthwash": True,
-    "Flu Medicine": True,
-    "Gasoline": True,
-    "Energy Drink": True,
-    # "Motor Oil": True,
-    # "Mega Bean": True,
-    # "Battery": True,
-    # "Chili": True,
-    # "Iodine": True,
-    # "Addy": True,
-    # "Horse Semen": True,
+# ingredients to mix with [ingredient_name, is_ingredient_available]
+available_ingredients: dict[Ingredients, bool] = {
+    Ingredients.BANANA: True,
+    Ingredients.CUKE: True,
+    Ingredients.DONUT: True,
+    Ingredients.PARACETAMOL: True,
+    Ingredients.VIAGRA: True,
+    # IngredientName.MOUTHWASH: True,
+    # IngredientName.FLU_MEDICINE: True,
+    # IngredientName.GASOLINE: True,
+    # IngredientName.ENERGY_DRINK: True,
+    # IngredientName.MOTOR_OIL: True,
+    # IngredientName.MEGA_BEAN: True,
+    # IngredientName.BATTERY: True,
+    # IngredientName.CHILI: True,
+    # IngredientName.IODINE: True,
+    # IngredientName.ADDY: True,
+    # IngredientName.HORSE_SEMEN: True,
 }
 # max length of the recipe
 max_ingredient_count = 8
@@ -55,7 +55,7 @@ print_progress = True
 progress_bar_resolution = 1
 # progress bar object for printing during iterations
 progress_bar = progressbar.ProgressBar(
-    maxval=len(ingredients) ** progress_bar_resolution
+    maxval=len(available_ingredients) ** progress_bar_resolution
 )
 # update variable for progress bar
 progress_counter = 0
@@ -101,7 +101,7 @@ statistics_runtimes: dict[str, int] = {}
 # prints progress while iterating through ingredients
 def main():
     starting_recipes = [
-        starting_recipes_map[drug] for drug in drugs if (drugs[drug] == True)
+        starting_recipes_map[drug] for drug in available_drugs if (available_drugs[drug] == True)
     ]
     findBestRecipes(starting_recipes)
 
@@ -110,10 +110,10 @@ def findBestRecipes(starting_recipes):
     global best_recipes_by_profit, best_recipes_by_sell_price
     global progress_bar
     global progress_counter
-    global ingredients
+    global available_ingredients
     sanityCheck()
     available_ingredient_names = [
-        name for name in ingredients if ingredients[name] == True
+        name for name in available_ingredients if available_ingredients[name] == True
     ]
     number_of_iterations = len(available_ingredient_names) ** max_ingredient_count
     time_estimation_in_seconds = time_overhead_constant + (
@@ -365,8 +365,8 @@ def updateBestRecipesList(recipe: Recipe):
 
 logTimestamp(Timestamp.START)
 main()
-number_of_ingredients = sum([1 for name in ingredients if ingredients[name] == True])
-number_of_drugs = sum([1 for name in drugs if drugs[name] == True])
+number_of_ingredients = sum([1 for name in available_ingredients if available_ingredients[name] == True])
+number_of_drugs = sum([1 for name in available_drugs if available_drugs[name] == True])
 number_of_iterations = number_of_ingredients**max_ingredient_count * number_of_drugs
 logTimestamp(Timestamp.END)
 elapsed_time = time.time() - start_time

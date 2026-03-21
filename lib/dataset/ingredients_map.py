@@ -1,0 +1,238 @@
+##
+# Data was copied from this sites:
+# https://hardcoregamer.com/schedule-1-every-ingredient-effects/
+# https://prodigygamers.com/2025/04/18/schedule-1-all-effects-chart-list-each-mixers-result-guide/
+#
+
+from lib.types import *
+import lib.datamodel as datamodel
+
+
+"""Mapping of ingredients to their attributes"""
+ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
+    IngredientE.BANANA: datamodel.IngredientData(
+        PlayerLevelE.HOODLUM_I,
+        2,
+        EffectE.GINGERITIS,
+        [
+            EffectReplacement(EffectE.CALMING, EffectE.SNEAKY),
+            EffectReplacement(EffectE.CYCLOPEAN, EffectE.THOUGHT_PROVOKING),
+            EffectReplacement(EffectE.DISORIENTING, EffectE.FOCUSED),
+            EffectReplacement(EffectE.FOCUSED, EffectE.SEIZURE_INDUCING),
+            EffectReplacement(EffectE.LONG_FACED, EffectE.REFRESHING),
+            EffectReplacement(EffectE.PARANOIA, EffectE.JENNERISING),
+            EffectReplacement(EffectE.SMELLY, EffectE.ANTI_GRAVITY),
+            EffectReplacement(EffectE.TOXIC, EffectE.SMELLY),
+        ],
+        [
+            EffectSwitch(EffectE.THOUGHT_PROVOKING, EffectE.ENERGIZING),
+        ],
+    ),
+    IngredientE.CUKE: datamodel.IngredientData(
+        PlayerLevelE.HOODLUM_I,
+        2,
+        EffectE.ENERGIZING,
+        [
+            EffectReplacement(EffectE.EUPHORIC, EffectE.LAXATIVE),
+            EffectReplacement(EffectE.FOGGY, EffectE.CYCLOPEAN),
+            EffectReplacement(EffectE.GINGERITIS, EffectE.THOUGHT_PROVOKING),
+            EffectReplacement(EffectE.MUNCHIES, EffectE.ATHLETIC),
+            EffectReplacement(EffectE.SLIPPERY, EffectE.MUNCHIES),
+            EffectReplacement(EffectE.SNEAKY, EffectE.PARANOIA),
+            EffectReplacement(EffectE.TOXIC, EffectE.EUPHORIC),
+        ],
+    ),
+    IngredientE.DONUT: datamodel.IngredientData(
+        PlayerLevelE.HOODLUM_I,
+        3,
+        EffectE.CALORIE_DENSE,
+        [
+            EffectReplacement(EffectE.ANTI_GRAVITY, EffectE.SLIPPERY),
+            EffectReplacement(EffectE.BALDING, EffectE.SNEAKY),
+            EffectReplacement(EffectE.CALORIE_DENSE, EffectE.EXPLOSIVE),
+            EffectReplacement(EffectE.FOCUSED, EffectE.EUPHORIC),
+            EffectReplacement(EffectE.JENNERISING, EffectE.GINGERITIS),
+            EffectReplacement(EffectE.SHRINKING, EffectE.ENERGIZING),
+        ],
+    ),
+    IngredientE.PARACETAMOL: datamodel.IngredientData(
+        PlayerLevelE.HOODLUM_I,
+        3,
+        EffectE.SNEAKY,
+        [
+            EffectReplacement(EffectE.CALMING, EffectE.SLIPPERY),
+            EffectReplacement(EffectE.ELECTRIFYING, EffectE.ATHLETIC),
+            EffectReplacement(EffectE.FOCUSED, EffectE.GINGERITIS),
+            EffectReplacement(EffectE.FOGGY, EffectE.CALMING),
+            EffectReplacement(EffectE.GLOWING, EffectE.TOXIC),
+            EffectReplacement(EffectE.MUNCHIES, EffectE.ANTI_GRAVITY),
+            EffectReplacement(EffectE.PARANOIA, EffectE.BALDING),
+            EffectReplacement(EffectE.ENERGIZING, EffectE.PARANOIA),
+            EffectReplacement(EffectE.SPICY, EffectE.BRIGHT_EYED),
+            EffectReplacement(EffectE.TOXIC, EffectE.TROPIC_THUNDER),
+        ],
+    ),
+    IngredientE.VIAGRA: datamodel.IngredientData(
+        PlayerLevelE.HOODLUM_II,
+        4,
+        EffectE.TROPIC_THUNDER,
+        [
+            EffectReplacement(EffectE.ATHLETIC, EffectE.SNEAKY),
+            EffectReplacement(EffectE.DISORIENTING, EffectE.TOXIC),
+            EffectReplacement(EffectE.EUPHORIC, EffectE.BRIGHT_EYED),
+            EffectReplacement(EffectE.LAXATIVE, EffectE.CALMING),
+        ],
+    ),
+    IngredientE.MOUTHWASH: datamodel.IngredientData(
+        PlayerLevelE.HOODLUM_III,
+        4,
+        EffectE.BALDING,
+        [
+            EffectReplacement(EffectE.CALMING, EffectE.ANTI_GRAVITY),
+            EffectReplacement(EffectE.CALORIE_DENSE, EffectE.SNEAKY),
+            EffectReplacement(EffectE.EXPLOSIVE, EffectE.SEDATING),
+            EffectReplacement(EffectE.FOCUSED, EffectE.JENNERISING),
+        ],
+    ),
+    IngredientE.FLU_MEDICINE: datamodel.IngredientData(
+        PlayerLevelE.HOODLUM_IV,
+        5,
+        EffectE.SEDATING,
+        [
+            EffectReplacement(EffectE.ATHLETIC, EffectE.MUNCHIES),
+            EffectReplacement(EffectE.CALMING, EffectE.BRIGHT_EYED),
+            EffectReplacement(EffectE.CYCLOPEAN, EffectE.FOGGY),
+            EffectReplacement(EffectE.ELECTRIFYING, EffectE.REFRESHING),
+            EffectReplacement(EffectE.EUPHORIC, EffectE.TOXIC),
+            EffectReplacement(EffectE.FOCUSED, EffectE.CALMING),
+            EffectReplacement(EffectE.LAXATIVE, EffectE.EUPHORIC),
+            EffectReplacement(EffectE.MUNCHIES, EffectE.SLIPPERY),
+            EffectReplacement(EffectE.SHRINKING, EffectE.PARANOIA),
+            EffectReplacement(EffectE.THOUGHT_PROVOKING, EffectE.GINGERITIS),
+        ],
+    ),
+    IngredientE.GASOLINE: datamodel.IngredientData(
+        PlayerLevelE.HOODLUM_V,
+        5,
+        EffectE.TOXIC,
+        [
+            EffectReplacement(EffectE.DISORIENTING, EffectE.GLOWING),
+            EffectReplacement(EffectE.ELECTRIFYING, EffectE.DISORIENTING),
+            EffectReplacement(EffectE.EUPHORIC, EffectE.SPICY),
+            EffectReplacement(EffectE.ENERGIZING, EffectE.EUPHORIC),
+            EffectReplacement(EffectE.ENERGIZING, EffectE.SPICY),
+            EffectReplacement(EffectE.GINGERITIS, EffectE.SMELLY),
+            EffectReplacement(EffectE.JENNERISING, EffectE.SNEAKY),
+            EffectReplacement(EffectE.LAXATIVE, EffectE.FOGGY),
+            EffectReplacement(EffectE.MUNCHIES, EffectE.SEDATING),
+            EffectReplacement(EffectE.PARANOIA, EffectE.CALMING),
+            EffectReplacement(EffectE.SHRINKING, EffectE.FOCUSED),
+            EffectReplacement(EffectE.SNEAKY, EffectE.TROPIC_THUNDER),
+        ],
+    ),
+    IngredientE.ENERGY_DRINK: datamodel.IngredientData(
+        PlayerLevelE.PEDDLER_I,
+        6,
+        EffectE.ATHLETIC,
+        [
+            EffectReplacement(EffectE.DISORIENTING, EffectE.ELECTRIFYING),
+            EffectReplacement(EffectE.EUPHORIC, EffectE.ENERGIZING),
+            EffectReplacement(EffectE.FOCUSED, EffectE.SHRINKING),
+            EffectReplacement(EffectE.FOGGY, EffectE.LAXATIVE),
+            EffectReplacement(EffectE.GLOWING, EffectE.DISORIENTING),
+            EffectReplacement(EffectE.SCHIZOPHRENIC, EffectE.BALDING),
+            EffectReplacement(EffectE.SEDATING, EffectE.MUNCHIES),
+            EffectReplacement(EffectE.SPICY, EffectE.EUPHORIC),
+            EffectReplacement(EffectE.TROPIC_THUNDER, EffectE.SNEAKY),
+        ],
+    ),
+    IngredientE.MOTOR_OIL: datamodel.IngredientData(
+        PlayerLevelE.PEDDLER_II,
+        6,
+        EffectE.SLIPPERY,
+        [
+            EffectReplacement(EffectE.ENERGIZING, EffectE.MUNCHIES),
+            EffectReplacement(EffectE.EUPHORIC, EffectE.SEDATING),
+            EffectReplacement(EffectE.FOGGY, EffectE.TOXIC),
+            EffectReplacement(EffectE.MUNCHIES, EffectE.SCHIZOPHRENIC),
+            EffectReplacement(EffectE.PARANOIA, EffectE.ANTI_GRAVITY),
+        ],
+    ),
+    IngredientE.MEGA_BEAN: datamodel.IngredientData(
+        PlayerLevelE.PEDDLER_III,
+        7,
+        EffectE.FOGGY,
+        [
+            EffectReplacement(EffectE.ATHLETIC, EffectE.LAXATIVE),
+            EffectReplacement(EffectE.CALMING, EffectE.GLOWING),
+            EffectReplacement(EffectE.ENERGIZING, EffectE.CYCLOPEAN),
+            EffectReplacement(EffectE.FOCUSED, EffectE.DISORIENTING),
+            EffectReplacement(EffectE.JENNERISING, EffectE.PARANOIA),
+            EffectReplacement(EffectE.SEIZURE_INDUCING, EffectE.FOCUSED),
+            EffectReplacement(EffectE.SHRINKING, EffectE.ELECTRIFYING),
+            EffectReplacement(EffectE.SLIPPERY, EffectE.TOXIC),
+            EffectReplacement(EffectE.SNEAKY, EffectE.CALMING),
+            EffectReplacement(EffectE.THOUGHT_PROVOKING, EffectE.ENERGIZING),
+        ],
+    ),
+    IngredientE.BATTERY: datamodel.IngredientData(
+        PlayerLevelE.PEDDLER_IV,
+        8,
+        EffectE.BRIGHT_EYED,
+        [
+            EffectReplacement(EffectE.EUPHORIC, EffectE.ZOMBIFYING),
+            EffectReplacement(EffectE.ELECTRIFYING, EffectE.EUPHORIC),
+            EffectReplacement(EffectE.LAXATIVE, EffectE.CALORIE_DENSE),
+            EffectReplacement(EffectE.MUNCHIES, EffectE.TROPIC_THUNDER),
+            EffectReplacement(EffectE.SHRINKING, EffectE.MUNCHIES),
+        ],
+    ),
+    IngredientE.CHILI: datamodel.IngredientData(
+        PlayerLevelE.PEDDLER_V,
+        7,
+        EffectE.SPICY,
+        [
+            EffectReplacement(EffectE.ATHLETIC, EffectE.EUPHORIC),
+            EffectReplacement(EffectE.ANTI_GRAVITY, EffectE.TROPIC_THUNDER),
+            EffectReplacement(EffectE.LAXATIVE, EffectE.LONG_FACED),
+            EffectReplacement(EffectE.MUNCHIES, EffectE.TOXIC),
+            EffectReplacement(EffectE.SHRINKING, EffectE.REFRESHING),
+            EffectReplacement(EffectE.SNEAKY, EffectE.BRIGHT_EYED),
+        ],
+    ),
+    IngredientE.IODINE: datamodel.IngredientData(
+        PlayerLevelE.HUSTLER_I,
+        8,
+        EffectE.JENNERISING,
+        [
+            EffectReplacement(EffectE.CALMING, EffectE.BALDING),
+            EffectReplacement(EffectE.CALORIE_DENSE, EffectE.GINGERITIS),
+            EffectReplacement(EffectE.EUPHORIC, EffectE.SEIZURE_INDUCING),
+            EffectReplacement(EffectE.FOGGY, EffectE.PARANOIA),
+            EffectReplacement(EffectE.REFRESHING, EffectE.THOUGHT_PROVOKING),
+            EffectReplacement(EffectE.TOXIC, EffectE.SNEAKY),
+        ],
+    ),
+    IngredientE.ADDY: datamodel.IngredientData(
+        PlayerLevelE.HUSTLER_II,
+        9,
+        EffectE.THOUGHT_PROVOKING,
+        [
+            EffectReplacement(EffectE.EXPLOSIVE, EffectE.EUPHORIC),
+            EffectReplacement(EffectE.FOGGY, EffectE.ENERGIZING),
+            EffectReplacement(EffectE.GLOWING, EffectE.REFRESHING),
+            EffectReplacement(EffectE.LONG_FACED, EffectE.ELECTRIFYING),
+            EffectReplacement(EffectE.SEDATING, EffectE.GINGERITIS),
+        ],
+    ),
+    IngredientE.HORSE_SEMEN: datamodel.IngredientData(
+        PlayerLevelE.HUSTLER_III,
+        9,
+        EffectE.LONG_FACED,
+        [
+            EffectReplacement(EffectE.ANTI_GRAVITY, EffectE.CALMING),
+            EffectReplacement(EffectE.GINGERITIS, EffectE.REFRESHING),
+            EffectReplacement(EffectE.THOUGHT_PROVOKING, EffectE.ELECTRIFYING),
+        ],
+    ),
+}
