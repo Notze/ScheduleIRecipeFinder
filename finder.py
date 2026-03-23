@@ -1,245 +1,174 @@
-from lib.custom_types import ShortRecipe
-from lib.custom_types import Ingredients, Recipe
-from lib.datamodel.multiplier_map import multiplier_map
-from lib.ingredients import ingredients_map
-from lib.utility import prettyPrint
-from lib.datamodel.starting_recipes import starting_recipes_map
-import lib.mixer as mixer
+from lib import *
 
-import progressbar
 import time
-import datetime
-from enum import Enum
 
-# drugs to start mixing with
-available_drugs: dict[str, bool] = {
-    "OG-Kush": True,
-    # "Sour-Diesel": True,
-    # "Green-Crack": True,
-    # "Granddaddy-Purple": True,
-    # "Meth": True,
+
+##
+# START OF CONFIGRAITON
+# Make your adjustments here. Changing these values impacts performance!
+#
+
+# remove products that shall not be used while mixing
+available_products: list[ProductE] = {
+    ProductE.OG_KUSH,
+    # ProductE.SOUR_DIESEL,
+    # ProductE.GREEN_CRACK,
+    # ProductE.GRANDDADDY_PURPLE,
+    # ProductE.METH,
 }
-# ingredients to mix with [ingredient_name, is_ingredient_available]
-available_ingredients: dict[Ingredients, bool] = {
-    Ingredients.BANANA: True,
-    Ingredients.CUKE: True,
-    Ingredients.DONUT: True,
-    Ingredients.PARACETAMOL: True,
-    Ingredients.VIAGRA: True,
-    # IngredientName.MOUTHWASH: True,
-    # IngredientName.FLU_MEDICINE: True,
-    # IngredientName.GASOLINE: True,
-    # IngredientName.ENERGY_DRINK: True,
-    # IngredientName.MOTOR_OIL: True,
-    # IngredientName.MEGA_BEAN: True,
-    # IngredientName.BATTERY: True,
-    # IngredientName.CHILI: True,
-    # IngredientName.IODINE: True,
-    # IngredientName.ADDY: True,
-    # IngredientName.HORSE_SEMEN: True,
+
+# remove ingredients that shall not be used while mixing
+available_ingredients: list[IngredientE] = {
+    IngredientE.BANANA,
+    IngredientE.CUKE,
+    IngredientE.DONUT,
+    IngredientE.PARACETAMOL,
+    # IngredientE.VIAGRA,
+    # IngredientE.MOUTHWASH,
+    # IngredientE.FLU_MEDICINE,
+    # IngredientE.GASOLINE,
+    # IngredientE.ENERGY_DRINK,
+    # IngredientE.MOTOR_OIL,
+    # IngredientE.MEGA_BEAN,
+    # IngredientE.BATTERY,
+    # IngredientE.CHILI,
+    # IngredientE.IODINE,
+    # IngredientE.ADDY,
+    # IngredientE.HORSE_SEMEN,
 }
-# max length of the recipe
-max_ingredient_count = 8
-# print the currently best recipe everytime a better one is found
+
+# maximum number of ingredients to try per recipe
+max_ingredient_count: int = 9
+
+# wether or not to look for the recipe with the most profit / highest sell price
+find_highest_sell_price: bool = True
+find_highest_profit: bool = False
+
+# number of recipes to print beginning with the most profitable / highest sell price
+output_recipes_count: int = 1
+
+# if true, prints every new recipe that's added to the list of best recipes
 verbose = False
-# value for time estimation
-nano_seconds_per_iterations = 150
-# wenn bei mehr iterationen der spmi sinkt, ist der wert zu klein
-time_overhead_constant = 0.75  # .5 <> 1
 
-# wether or not to print progress while experimenting with recipes
+# if true, prints a progress bar while mixing recipes
 print_progress = True
 # higher value leads to more frequent updates on the progress bar
-# this impacts the performance
 # range [1:max_ingredient_count]
 progress_bar_resolution = 1
-# progress bar object for printing during iterations
-progress_bar = progressbar.ProgressBar(
-    maxval=len(available_ingredients) ** progress_bar_resolution
-)
-# update variable for progress bar
-progress_counter = 0
+
+##
+# END OF CONFIGRAITON
+#
+
+
+# dictionary for looking up ingredients that can handle given effects
+effect_ingredient_map: dict[EffectE, list[IngredientE]] = {}
 
 # list with the most profitable recipes
-best_recipes_by_sell_price: list[Recipe] = [Recipe([""], [], 0, 0.0)]
-best_recipes_by_profit: list[Recipe] = [Recipe([""], [], 0, 0.0)]
-# number of recipes to print beginning with the most profitable
-best_recipes_count: int = 1
+recipes_with_highest_sell_price: list[Recipe] = [Recipe([""], [], 0, 0.0)]
+recipes_with_highest_profit: list[Recipe] = [Recipe([""], [], 0, 0.0)]
 # lowest sort value in current best_recipes list
 least_best_recipes_sell_price: float = 0
 least_best_recipes_profit: float = 0
 
 
-class Timestamp(Enum):
-    UNKNOWN = 1
-    INGREDIENT_BANANA_START = 1
-    INGREDIENT_Cuke_START = 2
-    INGREDIENT_Donut_START = 3
-    INGREDIENT_Paracetamol_START = 4
-    INGREDIENT_Viagra_START = 5
-    INGREDIENT_Mouthwash_START = 6
-    INGREDIENT_Flu_Medicine_START = 7
-    INGREDIENT_Gasoline_START = 8
-    INGREDIENT_Energy_Drink_START = 9
-    INGREDIENT_Motor_Oil_START = 10
-    INGREDIENT_Mega_Bean_START = 11
-    INGREDIENT_Battery_START = 12
-    INGREDIENT_Chili_START = 13
-    INGREDIENT_Iodine_START = 14
-    INGREDIENT_Addy_START = 15
-    INGREDIENT_Horse_Semen_START = 16
-    START = 17
-    END = 18
-
-
-start_time = 0
-statistics_timestamps: dict[str, int] = {}
-statistics_runtimes: dict[str, int] = {}
-
-
-# @brief: Prints the recipes with the highest profit
-# prints progress while iterating through ingredients
 def main():
-    starting_recipes = [
-        starting_recipes_map[drug] for drug in available_drugs if (available_drugs[drug] == True)
-    ]
-    findBestRecipes(starting_recipes)
+    """Prints the recipes with the highest profit"""
 
+    init()
 
-def findBestRecipes(starting_recipes):
-    global best_recipes_by_profit, best_recipes_by_sell_price
-    global progress_bar
-    global progress_counter
-    global available_ingredients
-    sanityCheck()
-    available_ingredient_names = [
-        name for name in available_ingredients if available_ingredients[name] == True
-    ]
-    number_of_iterations = len(available_ingredient_names) ** max_ingredient_count
-    time_estimation_in_seconds = time_overhead_constant + (
-        number_of_iterations * nano_seconds_per_iterations
-    ) / (1000000000)
-    print("Drugs         : {}".format(len(starting_recipes)))
-    print("Ingredients   : {}".format(len(available_ingredient_names)))
-    print("Recipe Length : {} ingredients".format(max_ingredient_count))
-    print("Iterations    : {}".format(number_of_iterations))
-    print(
-        "Est. Time     : {}".format(
-            datetime.timedelta(seconds=time_estimation_in_seconds)
-        )
-    )
-    output_recipes_by_profit: list[Recipe] = []
-    output_recipes_by_sell_price: list[Recipe] = []
-
-    more_than_one_starting_recipe = len(starting_recipes) > 1
-    for recipe in starting_recipes:
-        if more_than_one_starting_recipe:
-            print("Experiementing with: " + recipe.ingredients[0])
-
-        if print_progress:
-            progress_bar.start()
+    for product in available_products:
         resetTierList()
-        mixRecursion(recipe, available_ingredient_names)
-        output_recipes_by_profit += best_recipes_by_profit
-        output_recipes_by_sell_price += best_recipes_by_sell_price
-        if print_progress:
-            progress_bar.finish()
-        progress_counter = 0
-
-        if more_than_one_starting_recipe:
-            print("{} recipe with highest sell price: ".format(recipe.ingredients[0]))
-            best_recipes_by_sell_price.sort(
-                key=lambda recipe: (recipe.profit), reverse=True
-            )
-            print(best_recipes_by_sell_price[0].ingredients)
-            prettyPrint(best_recipes_by_sell_price[0])
-            print("{} recipe with highest profit: ".format(recipe.ingredients[0]))
-            output_recipes_by_profit.sort(
-                key=lambda recipe: (recipe.profit), reverse=True
-            )
-            print(output_recipes_by_profit[0].ingredients)
-            prettyPrint(output_recipes_by_profit[0])
-
-    print("Highest sell price recipe overall: ")
-    output_recipes_by_sell_price.sort(key=lambda recipe: (recipe.profit), reverse=True)
-    print(output_recipes_by_sell_price[0].ingredients)
-    prettyPrint(output_recipes_by_sell_price[0])
-    print("Highest profit recipe overall: ")
-    output_recipes_by_profit.sort(key=lambda recipe: (recipe.profit), reverse=True)
-    print(output_recipes_by_profit[0].ingredients)
-    prettyPrint(output_recipes_by_profit[0])
-
-    for runtime_ingredient in sorted(
-        statistics_runtimes, key=lambda entry: (statistics_runtimes[entry])
-    ):
-        print(
-            str(runtime_ingredient)
-            + ": "
-            + str(statistics_runtimes[runtime_ingredient])
-        )
+        findBestRecipeForProduct(product)
+        printBestRecipes()
 
 
-# @brief Checks the imported ingredients and effect map on spelling errors.
-#
-# @throws KeyError on first spelling error
-def sanityCheck():
-    global ingredients_map
-    global multiplier_map
-    for ingredient_name in ingredients_map:
-        ingredient = ingredients_map[ingredient_name]
-        multiplier_map[ingredient.added_effect]
-        for effect_replacement in ingredient.effect_replacements:
-            multiplier_map[effect_replacement.to_remove]
-            multiplier_map[effect_replacement.to_add]
+def init():
+    """Initializes global variables."""
+
+    global effect_ingredient_map
+
+    for ingredient in [ingredients_map[ingredient_e] for ingredient_e in available_ingredients]:
+        effects_removed_by_ingredient = [
+            effect_replacement.to_remove for effect_replacement in ingredient.effect_replacements
+        ]
+        effects_removed_by_ingredient += [effect_switch.first for effect_switch in ingredient.effect_switches]
+        effects_removed_by_ingredient += [effect_switch.second for effect_switch in ingredient.effect_switches]
+
+        for effect_e in effects_removed_by_ingredient:
+            if effect_e in effect_ingredient_map:
+                if ingredient.name not in effect_ingredient_map[effect_e]:
+                    effect_ingredient_map[effect_e].append(ingredient.name)
+            else:
+                effect_ingredient_map[effect_e] = [ingredient.name]
 
 
-# @brief  Mixes every available ingredient into the given recipe.
-# adds the resulting recipe into the best_recipes list if applicable
-#
-# @param recipe
-# @param progress_bar a progressbar.ProgressBar object to update if applicable
-def mixRecursion(recipe: Recipe, available_ingredient_names: list[str]):
-    global ingredients_map
-    global progress_bar
-    global progress_counter
-    global start_time
-    global statistics_runtimes
-    for ingredient_name in available_ingredient_names:
-        if print_progress and len(recipe.ingredients) == progress_bar_resolution:
-            if progress_counter >= 1:
-                logTimestamp(Timestamp(progress_counter))
-                elapsed_time = time.time() - start_time
-                print(
-                    "Est. Time {}   : {} ({:.0f} seconds / {} steps * {} steps_max)".format(
-                        progress_counter,
-                        datetime.timedelta(
-                            seconds=(
-                                (elapsed_time / progress_counter) * progress_bar.maxval
-                            )
-                        ),
-                        elapsed_time,
-                        progress_counter,
-                        progress_bar.maxval,
-                    )
-                )
-                statistics_runtimes[
-                    available_ingredient_names[progress_counter - 1]
-                ] = elapsed_time
-                progress_bar.start()
-            progress_bar.update(progress_counter)
-            progress_counter += 1
-        new_recipe = mixer.mixOneIngredientLong(recipe, ingredient_name)
+def resetTierList():
+    """Resets the global variables wich is only necessary of experimenting with multiple products."""
+    global recipes_with_highest_profit, recipes_with_highest_sell_price
+    global least_best_recipes_profit, least_best_recipes_sell_price
+
+    recipes_with_highest_profit = [Recipe([""], [], 0, 0.0)]
+    recipes_with_highest_sell_price = [Recipe([""], [], 0, 0.0)]
+    least_best_recipes_sell_price = 0
+    least_best_recipes_profit = 0
+
+
+def printBestRecipes():
+    """Prints the recipes with the highest profit / highest sell price"""
+
+    if find_highest_profit:
+        print("Highest profit overall: ")
+        recipes_with_highest_profit.sort(key=lambda recipe: (recipe.profit), reverse=True)
+        for i in range(output_recipes_count):
+            utility.prettyPrint(recipes_with_highest_profit[i])
+
+    if find_highest_sell_price:
+        print("Highest sell price overall: ")
+        recipes_with_highest_sell_price.sort(key=lambda recipe: (recipe.profit), reverse=True)
+        for i in range(output_recipes_count):
+            utility.prettyPrint(recipes_with_highest_sell_price[i])
+
+
+def findBestRecipeForProduct(product_e: ProductE):
+    """Calls the recursion function for mixing ingredients into the recipe."""
+
+    print("Product           : {}".format(product_e.name))
+    print("Ingredients       : {} overall".format(len(available_ingredients)))
+    print("Max Recipe Length : {} additives".format(max_ingredient_count))
+
+    mixRecursion(starting_recipes_map[product_e])
+
+
+def mixRecursion(recipe: Recipe):
+    """Mixes every available ingredient into the given recipe.
+    adds the resulting recipe into the best_recipes list if applicable"""
+
+    ingredients_to_try = [  # all ingredients that can add their basic effect
+        ingredient_e
+        for ingredient_e in available_ingredients
+        if (ingredients_map[ingredient_e].added_effect not in recipe.effects)
+    ]
+    for existing_effect in recipe.effects:  # all ingredients that can change an existing effect
+        if existing_effect in effect_ingredient_map:
+            ingredients_to_try += effect_ingredient_map[existing_effect]
+
+    for ingredient_e in ingredients_to_try:
+        new_recipe = mixer.mixOneIngredientLong(recipe, ingredient_e)
+
         if new_recipe.effects == recipe.effects:
             continue
 
-        updateBestRecipesList(new_recipe)
-        if not ingredientListFull(new_recipe) and not recipeDead(new_recipe):
-            mixRecursion(new_recipe, available_ingredient_names)
+        updateBestRecipesLists(new_recipe)
+
+        if ingredientListFull(new_recipe) or recipeDead(new_recipe):
+            continue
+
+        mixRecursion(new_recipe)
 
 
 def ingredientListFull(recipe: Recipe):
-    global max_ingredient_count
-    return len(recipe.ingredients) - 1 >= max_ingredient_count
+    return len(recipe.ingredients) >= max_ingredient_count
 
 
 def recipeDead(recipe: Recipe):
@@ -249,132 +178,54 @@ def recipeDead(recipe: Recipe):
     return (ingredients[-1] == ingredients[-2]) and (ingredients[-1] == ingredients[-3])
 
 
-def logTimestamp(key: str):
-    global start_time
-    global statistics_timestamps, statistics_runtimes
-    current_time = time.time()
-    statistics_timestamps[key] = current_time
-    if key == "start_time":
-        start_time = current_time
+def updateBestRecipesLists(recipe: Recipe):
+    if find_highest_profit:
+        updateHighestProfitList(recipe)
+    if find_highest_sell_price:
+        updateHighestSellPriceList(recipe)
 
 
-# def mixRecursion(recipe: ShortRecipe, available_ingredient_names: list[str]):
-#     global ingredients_map
-#     global progress_bar
-#     global progress_counter
-#     global start_time
-#     for ingredient_name in available_ingredient_names:
-#         if (print_progress
-#                 and len(recipe.ingredients) == progress_bar_resolution):
-#             if (progress_counter != 0 and math.floor(
-#                     progress_bar.maxval * 100 / progress_counter) == 50):
-#                 elapsed_time = time.time() - start_time
-#                 print("Est. Time     : {} // {} - {} - {}".format(
-#                     datetime.timedelta(seconds=(elapsed_time *
-#                                                 progress_bar.maxval /
-#                                                 progress_counter)),
-#                     elapsed_time, progress_counter, progress_bar.maxval))
-#                 progress_bar.start()
-#             progress_bar.update(progress_counter)
-#             progress_counter += 1
-#         new_recipe = mixer.mixOneIngredient(recipe, ingredient_name)
-#         if (new_recipe.effects == recipe.effects):
-#             continue
+def updateHighestProfitList(recipe: Recipe):
+    """Updates the tier list if recipe is better than previous ones."""
 
-#         updateBestRecipesList(new_recipe)
-#         if (len(new_recipe.ingredients) - 1 < max_ingredient_count):
-#             mixRecursion(new_recipe, available_ingredient_names)
-
-
-#
-def resetTierList():
-    global best_recipes
-    global best_recipes_count
+    global recipes_with_highest_profit
     global least_best_recipes_profit
-    best_recipes = [ShortRecipe([], [])]
-    best_recipes_count = 1
-    least_best_recipes_profit = 0
 
-
-# @brief Adds recipe to best_recipes list if applicable.
-#
-# @param recipe the recipe to add
-# def updateBestRecipesList(recipe: ShortRecipe):
-#     global best_recipes
-#     global least_best_recipes_profit
-#     global progress_bar
-#     global progress_counter
-#     if (recipe.multiplikator_sum > least_best_recipes_profit):
-#         if (best_recipes_count == 1):
-#             best_recipes = [recipe]
-#             least_best_recipes_profit = recipe.multiplikator_sum
-#         else:
-#             best_recipes.append(recipe)
-#             best_recipes.sort(key=lambda recipe: (recipe.multiplikator_sum),
-#                               reverse=True)
-#             best_recipes = best_recipes[:best_recipes_count]
-#             least_best_recipes_profit = best_recipes[-1].multiplikator_sum
-#         if (verbose):
-#             long_recipe = toRecipe(best_recipes[0])
-#             print(long_recipe.ingredients)
-#             prettyPrint(long_recipe)
-#             if (print_progress):
-#                 progress_bar.start()
-#                 progress_bar.update(progress_counter)
-def updateBestRecipesList(recipe: Recipe):
-    global best_recipes_by_profit, best_recipes_by_sell_price
-    global least_best_recipes_profit, least_best_recipes_sell_price
-    global progress_bar, progress_counter
     if recipe.profit > least_best_recipes_profit:
-        if best_recipes_count == 1:
-            best_recipes_by_profit = [recipe]
+        if output_recipes_count == 1:
+            recipes_with_highest_profit = [recipe]
             least_best_recipes_profit = recipe.profit
         else:
-            best_recipes_by_profit.append(recipe)
-            best_recipes_by_profit.sort(
-                key=lambda recipe: (recipe.profit), reverse=True
-            )
-            best_recipes_by_profit = best_recipes_by_profit[:best_recipes_count]
-            least_best_recipes_profit = best_recipes_by_profit[-1].profit
+            recipes_with_highest_profit.append(recipe)
+            recipes_with_highest_profit.sort(key=lambda recipe: (recipe.profit), reverse=True)
+            recipes_with_highest_profit = recipes_with_highest_profit[:output_recipes_count]
+            least_best_recipes_profit = recipes_with_highest_profit[-1].profit
+
         if verbose:
-            long_recipe = best_recipes_by_profit[0]
-            print(long_recipe.ingredients)
-            prettyPrint(long_recipe)
-            if print_progress:
-                progress_bar.start()
-                progress_bar.update(progress_counter)
+            prettyPrint(recipe)
+
+
+def updateHighestSellPriceList(recipe: Recipe):
+    """Updates the tier list if recipe is better than previous ones."""
+
+    global recipes_with_highest_sell_price
+    global least_best_recipes_sell_price
+
     if recipe.sell_price > least_best_recipes_sell_price:
-        if best_recipes_count == 1:
-            best_recipes_by_sell_price = [recipe]
+        if output_recipes_count == 1:
+            recipes_with_highest_sell_price = [recipe]
             least_best_recipes_sell_price = recipe.sell_price
         else:
-            best_recipes_by_sell_price.append(recipe)
-            best_recipes_by_sell_price.sort(
-                key=lambda recipe: (recipe.sell_price), reverse=True
-            )
-            best_recipes_by_sell_price = best_recipes_by_sell_price[:best_recipes_count]
-            least_best_recipes_sell_price = best_recipes_by_sell_price[-1].sell_price
+            recipes_with_highest_sell_price.append(recipe)
+            recipes_with_highest_sell_price.sort(key=lambda recipe: (recipe.sell_price), reverse=True)
+            recipes_with_highest_sell_price = recipes_with_highest_sell_price[:output_recipes_count]
+            least_best_recipes_sell_price = recipes_with_highest_sell_price[-1].sell_price
+
         if verbose:
-            long_recipe = best_recipes_by_sell_price[0]
-            print(long_recipe.ingredients)
-            prettyPrint(long_recipe)
-            if print_progress:
-                progress_bar.start()
-                progress_bar.update(progress_counter)
+            prettyPrint(recipe)
 
 
-logTimestamp(Timestamp.START)
+start_time = time.time()
 main()
-number_of_ingredients = sum([1 for name in available_ingredients if available_ingredients[name] == True])
-number_of_drugs = sum([1 for name in available_drugs if available_drugs[name] == True])
-number_of_iterations = number_of_ingredients**max_ingredient_count * number_of_drugs
-logTimestamp(Timestamp.END)
 elapsed_time = time.time() - start_time
-nano_seconds_per_iterations = (
-    (elapsed_time - time_overhead_constant) * 1000000000 / number_of_iterations
-)
-print(
-    "--- {:.2f} seconds // {} // {:.0f} ---".format(
-        elapsed_time, time_overhead_constant, nano_seconds_per_iterations
-    )
-)
+print("--- elapsed time: {:.2f} seconds ---".format(elapsed_time))

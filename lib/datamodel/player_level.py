@@ -1,3 +1,6 @@
+from enum import Enum
+
+
 class PlayerLevelE(Enum):
     """Player Level Ingame"""
 

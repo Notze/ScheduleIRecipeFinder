@@ -1,16 +1,16 @@
 ##
-# Data was copied from this sites:
+# Data was originaly copied from this sites (but had to be adapted):
 # https://hardcoregamer.com/schedule-1-every-ingredient-effects/
 # https://prodigygamers.com/2025/04/18/schedule-1-all-effects-chart-list-each-mixers-result-guide/
 #
 
-from lib.types import *
-import lib.datamodel as datamodel
+from ..datamodel import *
 
 
 """Mapping of ingredients to their attributes"""
-ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
-    IngredientE.BANANA: datamodel.IngredientData(
+ingredients_map: dict[IngredientE, Ingredient] = {
+    IngredientE.BANANA: Ingredient(
+        IngredientE.BANANA,
         PlayerLevelE.HOODLUM_I,
         2,
         EffectE.GINGERITIS,
@@ -28,7 +28,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectSwitch(EffectE.THOUGHT_PROVOKING, EffectE.ENERGIZING),
         ],
     ),
-    IngredientE.CUKE: datamodel.IngredientData(
+    IngredientE.CUKE: Ingredient(
+        IngredientE.CUKE,
         PlayerLevelE.HOODLUM_I,
         2,
         EffectE.ENERGIZING,
@@ -42,7 +43,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.TOXIC, EffectE.EUPHORIC),
         ],
     ),
-    IngredientE.DONUT: datamodel.IngredientData(
+    IngredientE.DONUT: Ingredient(
+        IngredientE.DONUT,
         PlayerLevelE.HOODLUM_I,
         3,
         EffectE.CALORIE_DENSE,
@@ -55,7 +57,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.SHRINKING, EffectE.ENERGIZING),
         ],
     ),
-    IngredientE.PARACETAMOL: datamodel.IngredientData(
+    IngredientE.PARACETAMOL: Ingredient(
+        IngredientE.PARACETAMOL,
         PlayerLevelE.HOODLUM_I,
         3,
         EffectE.SNEAKY,
@@ -72,7 +75,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.TOXIC, EffectE.TROPIC_THUNDER),
         ],
     ),
-    IngredientE.VIAGRA: datamodel.IngredientData(
+    IngredientE.VIAGRA: Ingredient(
+        IngredientE.VIAGRA,
         PlayerLevelE.HOODLUM_II,
         4,
         EffectE.TROPIC_THUNDER,
@@ -83,7 +87,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.LAXATIVE, EffectE.CALMING),
         ],
     ),
-    IngredientE.MOUTHWASH: datamodel.IngredientData(
+    IngredientE.MOUTHWASH: Ingredient(
+        IngredientE.MOUTHWASH,
         PlayerLevelE.HOODLUM_III,
         4,
         EffectE.BALDING,
@@ -94,7 +99,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.FOCUSED, EffectE.JENNERISING),
         ],
     ),
-    IngredientE.FLU_MEDICINE: datamodel.IngredientData(
+    IngredientE.FLU_MEDICINE: Ingredient(
+        IngredientE.FLU_MEDICINE,
         PlayerLevelE.HOODLUM_IV,
         5,
         EffectE.SEDATING,
@@ -111,7 +117,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.THOUGHT_PROVOKING, EffectE.GINGERITIS),
         ],
     ),
-    IngredientE.GASOLINE: datamodel.IngredientData(
+    IngredientE.GASOLINE: Ingredient(
+        IngredientE.GASOLINE,
         PlayerLevelE.HOODLUM_V,
         5,
         EffectE.TOXIC,
@@ -130,7 +137,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.SNEAKY, EffectE.TROPIC_THUNDER),
         ],
     ),
-    IngredientE.ENERGY_DRINK: datamodel.IngredientData(
+    IngredientE.ENERGY_DRINK: Ingredient(
+        IngredientE.ENERGY_DRINK,
         PlayerLevelE.PEDDLER_I,
         6,
         EffectE.ATHLETIC,
@@ -146,7 +154,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.TROPIC_THUNDER, EffectE.SNEAKY),
         ],
     ),
-    IngredientE.MOTOR_OIL: datamodel.IngredientData(
+    IngredientE.MOTOR_OIL: Ingredient(
+        IngredientE.MOTOR_OIL,
         PlayerLevelE.PEDDLER_II,
         6,
         EffectE.SLIPPERY,
@@ -158,7 +167,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.PARANOIA, EffectE.ANTI_GRAVITY),
         ],
     ),
-    IngredientE.MEGA_BEAN: datamodel.IngredientData(
+    IngredientE.MEGA_BEAN: Ingredient(
+        IngredientE.MEGA_BEAN,
         PlayerLevelE.PEDDLER_III,
         7,
         EffectE.FOGGY,
@@ -175,7 +185,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.THOUGHT_PROVOKING, EffectE.ENERGIZING),
         ],
     ),
-    IngredientE.BATTERY: datamodel.IngredientData(
+    IngredientE.BATTERY: Ingredient(
+        IngredientE.BATTERY,
         PlayerLevelE.PEDDLER_IV,
         8,
         EffectE.BRIGHT_EYED,
@@ -187,7 +198,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.SHRINKING, EffectE.MUNCHIES),
         ],
     ),
-    IngredientE.CHILI: datamodel.IngredientData(
+    IngredientE.CHILI: Ingredient(
+        IngredientE.CHILI,
         PlayerLevelE.PEDDLER_V,
         7,
         EffectE.SPICY,
@@ -200,7 +212,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.SNEAKY, EffectE.BRIGHT_EYED),
         ],
     ),
-    IngredientE.IODINE: datamodel.IngredientData(
+    IngredientE.IODINE: Ingredient(
+        IngredientE.IODINE,
         PlayerLevelE.HUSTLER_I,
         8,
         EffectE.JENNERISING,
@@ -213,7 +226,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.TOXIC, EffectE.SNEAKY),
         ],
     ),
-    IngredientE.ADDY: datamodel.IngredientData(
+    IngredientE.ADDY: Ingredient(
+        IngredientE.ADDY,
         PlayerLevelE.HUSTLER_II,
         9,
         EffectE.THOUGHT_PROVOKING,
@@ -225,7 +239,8 @@ ingredients_map: dict[IngredientE, datamodel.IngredientData] = {
             EffectReplacement(EffectE.SEDATING, EffectE.GINGERITIS),
         ],
     ),
-    IngredientE.HORSE_SEMEN: datamodel.IngredientData(
+    IngredientE.HORSE_SEMEN: Ingredient(
+        IngredientE.HORSE_SEMEN,
         PlayerLevelE.HUSTLER_III,
         9,
         EffectE.LONG_FACED,

@@ -1,4 +1,7 @@
-class DrugE(Enum):
+from enum import Enum
+
+
+class ProductE(Enum):
     """All known base products."""
 
     OG_KUSH = 1

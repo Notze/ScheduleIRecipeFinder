@@ -1,4 +1,8 @@
-class EffectE(Enum):
+from typing import NamedTuple
+from enum import IntEnum
+
+
+class EffectE(IntEnum):
     """All known drug effects."""
 
     ANTI_GRAVITY = 0
@@ -38,14 +42,14 @@ class EffectE(Enum):
     ZOMBIFYING = 34
 
 
-class EffectReplacement(typing.NamedTuple):
+class EffectReplacement(NamedTuple):
     """Pair of two effects representing a replacement of the first with the second."""
 
     to_remove: EffectE
     to_add: EffectE
 
 
-class EffectSwitch(typing.NamedTuple):
+class EffectSwitch(NamedTuple):
     """Pair of two effects representing a switch of the first with the second and vice versa."""
 
     first: EffectE

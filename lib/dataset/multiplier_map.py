@@ -1,4 +1,4 @@
-from lib.types.effect import EffectE
+from lib.datamodel.effect import EffectE
 
 
 """Mapping of effects to sell price multiplicator"""
