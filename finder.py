@@ -38,7 +38,7 @@ available_ingredients: list[IngredientE] = {
 }
 
 # maximum number of ingredients to try per recipe
-max_ingredient_count: int = 9
+max_ingredient_count: int = -1
 
 # wether or not to look for the recipe with the most profit / highest sell price
 find_highest_sell_price: bool = True
@@ -135,14 +135,17 @@ def findBestRecipeForProduct(product_e: ProductE):
 
     print("Product           : {}".format(product_e.name))
     print("Ingredients       : {} overall".format(len(available_ingredients)))
-    print("Max Recipe Length : {} additives".format(max_ingredient_count))
+    print("Max Recipe Length : {} additives".format("unlimited" if max_ingredient_count < 0 else max_ingredient_count))
 
-    mixRecursion(starting_recipes_map[product_e])
+    starting_recipe = starting_recipes_map[product_e]
+    updateEffectHistory(starting_recipe)
+    mixRecursion(starting_recipe)
 
 
 def mixRecursion(recipe: Recipe):
     """Mixes every available ingredient into the given recipe.
-    adds the resulting recipe into the best_recipes list if applicable"""
+    adds the resulting recipe into the best_recipes list if applicable
+    """
 
     ingredients_to_try = [  # all ingredients that can add their basic effect
         ingredient_e
@@ -151,31 +154,31 @@ def mixRecursion(recipe: Recipe):
     ]
     for existing_effect in recipe.effects:  # all ingredients that can change an existing effect
         if existing_effect in effect_ingredient_map:
-            ingredients_to_try += effect_ingredient_map[existing_effect]
+            for ingredient_e in effect_ingredient_map[existing_effect]:
+                if ingredient_e not in ingredients_to_try:
+                    ingredients_to_try.append(ingredient_e)
 
     for ingredient_e in ingredients_to_try:
         new_recipe = mixer.mixOneIngredientLong(recipe, ingredient_e)
 
-        if new_recipe.effects == recipe.effects:
+        # print("----------------------")
+        # print("looking in {} previous effects".format(len(new_recipe.previous_effects)))
+        # print("looking for: {}".format(recipe.effects))
+
+        same_effects_as_before = not updateEffectHistory(new_recipe)
+        if same_effects_as_before:
             continue
 
         updateBestRecipesLists(new_recipe)
 
-        if ingredientListFull(new_recipe) or recipeDead(new_recipe):
-            continue
-
-        mixRecursion(new_recipe)
+        if hasRoomForMoreAdditives(new_recipe):
+            mixRecursion(new_recipe)
 
 
-def ingredientListFull(recipe: Recipe):
-    return len(recipe.ingredients) >= max_ingredient_count
-
-
-def recipeDead(recipe: Recipe):
-    ingredients = recipe.ingredients
-    if len(ingredients) < 3:
-        return False
-    return (ingredients[-1] == ingredients[-2]) and (ingredients[-1] == ingredients[-3])
+def hasRoomForMoreAdditives(recipe: Recipe):
+    if max_ingredient_count < 0:
+        return True
+    return len(recipe.ingredients) < max_ingredient_count
 
 
 def updateBestRecipesLists(recipe: Recipe):
