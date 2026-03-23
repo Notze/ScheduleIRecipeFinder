@@ -22,7 +22,6 @@ class Recipe(NamedTuple):
     ingredients: list[IngredientE] = []
     sell_price: float = 0
     profit: float = 0
-    previous_effects: list[set[EffectE]] = []
 
 
 class ShortRecipe(NamedTuple):

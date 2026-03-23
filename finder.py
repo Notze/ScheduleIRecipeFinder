@@ -23,10 +23,10 @@ available_ingredients: list[IngredientE] = {
     IngredientE.CUKE,
     IngredientE.DONUT,
     IngredientE.PARACETAMOL,
-    # IngredientE.VIAGRA,
-    # IngredientE.MOUTHWASH,
-    # IngredientE.FLU_MEDICINE,
-    # IngredientE.GASOLINE,
+    IngredientE.VIAGRA,
+    IngredientE.MOUTHWASH,
+    IngredientE.FLU_MEDICINE,
+    IngredientE.GASOLINE,
     # IngredientE.ENERGY_DRINK,
     # IngredientE.MOTOR_OIL,
     # IngredientE.MEGA_BEAN,
@@ -38,7 +38,7 @@ available_ingredients: list[IngredientE] = {
 }
 
 # maximum number of ingredients to try per recipe
-max_ingredient_count: int = -1
+max_ingredient_count: int = 10
 
 # wether or not to look for the recipe with the most profit / highest sell price
 find_highest_sell_price: bool = True
@@ -70,6 +70,9 @@ recipes_with_highest_profit: list[Recipe] = [Recipe([""], [], 0, 0.0)]
 # lowest sort value in current best_recipes list
 least_best_recipes_sell_price: float = 0
 least_best_recipes_profit: float = 0
+
+# list of previous effect sets. used as abort condition for the mixer recursion
+previous_effects: list[set[EffectE]] = []
 
 
 def main():
@@ -107,11 +110,13 @@ def resetTierList():
     """Resets the global variables wich is only necessary of experimenting with multiple products."""
     global recipes_with_highest_profit, recipes_with_highest_sell_price
     global least_best_recipes_profit, least_best_recipes_sell_price
+    global previous_effects
 
     recipes_with_highest_profit = [Recipe([""], [], 0, 0.0)]
     recipes_with_highest_sell_price = [Recipe([""], [], 0, 0.0)]
     least_best_recipes_sell_price = 0
     least_best_recipes_profit = 0
+    previous_effects = []
 
 
 def printBestRecipes():
@@ -138,7 +143,6 @@ def findBestRecipeForProduct(product_e: ProductE):
     print("Max Recipe Length : {} additives".format("unlimited" if max_ingredient_count < 0 else max_ingredient_count))
 
     starting_recipe = starting_recipes_map[product_e]
-    updateEffectHistory(starting_recipe)
     mixRecursion(starting_recipe)
 
 
@@ -165,14 +169,27 @@ def mixRecursion(recipe: Recipe):
         # print("looking in {} previous effects".format(len(new_recipe.previous_effects)))
         # print("looking for: {}".format(recipe.effects))
 
-        same_effects_as_before = not updateEffectHistory(new_recipe)
-        if same_effects_as_before:
+        if not newEffects(new_recipe):
             continue
 
         updateBestRecipesLists(new_recipe)
 
         if hasRoomForMoreAdditives(new_recipe):
             mixRecursion(new_recipe)
+
+
+def newEffects(recipe: Recipe):
+    """Adds the current set of effects to the history. Returns False if history already contains the current set of effects"""
+
+    global previous_effects
+
+    current_effects = set(recipe.effects)
+
+    if current_effects in previous_effects:
+        return False
+
+    previous_effects.append(current_effects)
+    return True
 
 
 def hasRoomForMoreAdditives(recipe: Recipe):

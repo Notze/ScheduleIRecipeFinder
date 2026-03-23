@@ -21,8 +21,7 @@ def mixOneIngredientLong(recipe: Recipe, ingredient_e: IngredientE):
     production_cost = recipe.production_cost + new_ingredient.price
     sell_price = calculateSellPrice(base_price, effects)
     profit = calculateProfit(sell_price, production_cost)
-    previous_effects = copy.copy(recipe.previous_effects)
-    return Recipe(base_product, effects, base_price, production_cost, ingredients, sell_price, profit, previous_effects)
+    return Recipe(base_product, effects, base_price, production_cost, ingredients, sell_price, profit)
 
 
 # def mixOneIngredient(recipe: ShortRecipe, ingredient_e: IngredientE):
