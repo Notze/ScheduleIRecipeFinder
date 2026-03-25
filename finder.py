@@ -38,7 +38,7 @@ available_ingredients: list[IngredientE] = {
 }
 
 # maximum number of ingredients to try per recipe
-max_ingredient_count: int = 6
+max_ingredient_count: int = 8
 
 # wether or not to look for the recipe with the most profit / highest sell price
 find_highest_sell_price: bool = True
@@ -124,7 +124,7 @@ def printBestRecipes():
 
     if find_highest_sell_price:
         print("Highest sell price overall: ")
-        recipes_with_highest_sell_price.sort(key=lambda recipe: (recipe.profit), reverse=True)
+        recipes_with_highest_sell_price.sort(key=lambda recipe: (recipe.sell_price), reverse=True)
         for i in range(output_recipes_count):
             utility.prettyPrint(recipes_with_highest_sell_price[i])
 
