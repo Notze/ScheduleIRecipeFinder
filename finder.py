@@ -1,7 +1,7 @@
 from lib import *
 
 import time
-
+import datetime
 
 ##
 # START OF CONFIGRAITON
@@ -27,8 +27,8 @@ available_ingredients: list[IngredientE] = {
     IngredientE.MOUTHWASH,
     IngredientE.FLU_MEDICINE,
     IngredientE.GASOLINE,
-    # IngredientE.ENERGY_DRINK,
-    # IngredientE.MOTOR_OIL,
+    IngredientE.ENERGY_DRINK,
+    IngredientE.MOTOR_OIL,
     # IngredientE.MEGA_BEAN,
     # IngredientE.BATTERY,
     # IngredientE.CHILI,
@@ -38,23 +38,17 @@ available_ingredients: list[IngredientE] = {
 }
 
 # maximum number of ingredients to try per recipe
-max_ingredient_count: int = 10
+max_ingredient_count: int = 6
 
 # wether or not to look for the recipe with the most profit / highest sell price
 find_highest_sell_price: bool = True
 find_highest_profit: bool = False
 
 # number of recipes to print beginning with the most profitable / highest sell price
-output_recipes_count: int = 1
+output_recipes_count: int = 3
 
 # if true, prints every new recipe that's added to the list of best recipes
 verbose = False
-
-# if true, prints a progress bar while mixing recipes
-print_progress = True
-# higher value leads to more frequent updates on the progress bar
-# range [1:max_ingredient_count]
-progress_bar_resolution = 1
 
 ##
 # END OF CONFIGRAITON
@@ -143,10 +137,10 @@ def findBestRecipeForProduct(product_e: ProductE):
     print("Max Recipe Length : {} additives".format("unlimited" if max_ingredient_count < 0 else max_ingredient_count))
 
     starting_recipe = starting_recipes_map[product_e]
-    mixRecursion(starting_recipe)
+    mixRecursion(starting_recipe, True)
 
 
-def mixRecursion(recipe: Recipe):
+def mixRecursion(recipe: Recipe, print_progress: bool = False):
     """Mixes every available ingredient into the given recipe.
     adds the resulting recipe into the best_recipes list if applicable
     """
@@ -162,12 +156,13 @@ def mixRecursion(recipe: Recipe):
                 if ingredient_e not in ingredients_to_try:
                     ingredients_to_try.append(ingredient_e)
 
-    for ingredient_e in ingredients_to_try:
-        new_recipe = mixer.mixOneIngredientLong(recipe, ingredient_e)
+    number_of_ingredients: int = len(ingredients_to_try)
+    for i in range(0, number_of_ingredients):
+        current_ingredient = ingredients_to_try[i]
+        new_recipe = mixer.mixOneIngredientLong(recipe, current_ingredient)
 
-        # print("----------------------")
-        # print("looking in {} previous effects".format(len(new_recipe.previous_effects)))
-        # print("looking for: {}".format(recipe.effects))
+        if print_progress:
+            printProgress(i, number_of_ingredients)
 
         if not newEffects(new_recipe):
             continue
@@ -176,6 +171,24 @@ def mixRecursion(recipe: Recipe):
 
         if hasRoomForMoreAdditives(new_recipe):
             mixRecursion(new_recipe)
+
+    if print_progress:
+        printProgress(1, 1)
+
+
+def printProgress(current_iteration: int, max_iterations: int):
+    """Prints the current progress, estimating the remaining time based on previous cycles."""
+
+    global start_time
+
+    progress_percent = current_iteration * 100 / max_iterations
+    time_left = (
+        (0)
+        if (current_iteration <= 0)
+        else ((time.time() - start_time) / current_iteration * (max_iterations - current_iteration))
+    )
+
+    print("Progress: {:3.0f}% [{} left]".format(progress_percent, str(datetime.timedelta(seconds=round(time_left)))))
 
 
 def newEffects(recipe: Recipe):
